@@ -15,8 +15,18 @@ const randomUsers = document.getElementById('gallery')
 
 function fetchUsers(url){
     return fetch(url)
+                .then(checkStatus)
                 .then(response => response.json())
                 .catch(error => console.log('There is a problem', error))
+}
+
+
+function checkStatus(response){
+    if(response.ok){
+        return Promise.resolve(response)
+    } else {
+        return Promise.reject(new Error(response.statusText))
+    }
 }
 
 
@@ -66,6 +76,15 @@ function modalMarkup(user){
     // formatting Birthday MM/DD/YYYY
     const dateFormat = new Date(user.dob.date).toLocaleDateString("en-US",{day: '2-digit',month: '2-digit',year: 'numeric'})
 
+
+    // formatting of the Cell Number (XXX) XXX-XXXX
+    const clearCell = user.cell.replace(/\D/g,'')
+    function formatTelephone(text) {
+        const regex = /^\D*(\d{3})\D*(\d{3})\D*(\d{4})/;
+        return text.replace(regex, '($1) $2-$3');
+      }
+
+
     randomUsers.insertAdjacentHTML('beforeend', `
     <div class="modal-container">
         <div class="modal">
@@ -76,7 +95,7 @@ function modalMarkup(user){
                 <p class="modal-text">${user.email}</p>
                 <p class="modal-text cap">${user.location.city}</p>
                 <hr>
-                <p class="modal-text">${user.phone}</p>
+                <p class="modal-text">${formatTelephone(clearCell)}</p>
                 <p class="modal-text">${user.location.street.number} ${user.location.street.name}, ${user.location.city}, ${user.location.state} ${user.location.postcode}</p>
                 <p class="modal-text">Birthday: ${dateFormat}</p>
             </div>
